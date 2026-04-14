@@ -138,6 +138,7 @@ async function uploadToCloudinary(file) {
   }
 
   const data = await res.json();
+  console.log(data);
   return data.secure_url;
 }
 
