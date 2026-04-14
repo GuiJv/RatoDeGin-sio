@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GymDuo 🏋️</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #888;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── CONFIG OVERLAY ── */
+  #config-overlay {
+    position: fixed; inset: 0; background: #000;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; padding: 1rem;
+  }
+  #config-overlay.hidden { display: none; }
+
+  .config-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 480px; width: 100%;
+  }
+  .config-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; letter-spacing: 2px;
+    color: var(--accent); margin-bottom: .25rem;
+  }
+  .config-box p { color: var(--muted); font-size: .875rem; margin-bottom: 1.5rem; line-height: 1.6; }
+  .config-box a { color: var(--accent); }
+
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .4rem; letter-spacing: .05em; text-transform: uppercase; }
+  .field input {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: .7rem 1rem; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: .9rem;
+    outline: none; transition: border-color .2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .btn-primary {
+    width: 100%; background: var(--accent); color: #000;
+    border: none; border-radius: 8px; padding: .85rem;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 2px; cursor: pointer; transition: opacity .2s;
+    margin-top: .5rem;
+  }
+  .btn-primary:hover { opacity: .85; }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem; letter-spacing: 3px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--accent2); }
+  .header-actions { display: flex; gap: .5rem; }
+  .btn-icon {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; padding: .5rem .9rem;
+    font-size: .8rem; cursor: pointer; transition: all .2s;
+  }
+  .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── MAIN ── */
+  main { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
+
+  /* ── STREAK BAR ── */
+  .streak-bar {
+    display: flex; gap: .75rem; margin-bottom: 1.75rem;
+  }
+  .streak-card {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: .75rem;
+  }
+  .streak-card.active { border-color: var(--accent); }
+  .streak-icon { font-size: 1.5rem; }
+  .streak-info .name { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .streak-info .count { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--accent); line-height: 1; }
+  .streak-info .label { font-size: .7rem; color: var(--muted); }
+
+  /* ── ADD WORKOUT BUTTON ── */
+  .add-section { margin-bottom: 1.75rem; }
+  .btn-add {
+    display: flex; align-items: center; gap: .75rem;
+    width: 100%; background: transparent;
+    border: 1.5px dashed var(--border); border-radius: var(--radius);
+    padding: 1rem 1.25rem; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: .9rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-add:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-add .plus { font-size: 1.2rem; font-weight: 300; }
+
+  /* ── MODAL ── */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 100; padding: 0;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border-radius: 16px 16px 0 0;
+    padding: 1.5rem; width: 100%; max-width: 800px;
+    transform: translateY(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-backdrop.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .modal-header h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; }
+  .close-btn { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; line-height: 1; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: .75rem; }
+  .form-row.full { grid-template-columns: 1fr; }
+
+  .form-group label { display: block; font-size: .75rem; color: var(--muted); margin-bottom: .35rem; text-transform: uppercase; letter-spacing: .05em; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: .65rem .9rem; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: .9rem;
+    outline: none; transition: border-color .2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .form-group select option { background: var(--surface2); }
+
+  .photo-upload {
+    border: 1.5px dashed var(--border); border-radius: 8px;
+    padding: 1.25rem; text-align: center; cursor: pointer;
+    transition: border-color .2s; position: relative;
+  }
+  .photo-upload:hover { border-color: var(--accent); }
+  .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-upload p { color: var(--muted); font-size: .85rem; }
+  .photo-upload .ph-icon { font-size: 1.5rem; margin-bottom: .35rem; }
+
+  .modal-actions { display: flex; gap: .75rem; margin-top: 1.25rem; }
+  .btn-submit {
+    flex: 1; background: var(--accent); color: #000;
+    border: none; border-radius: 8px; padding: .85rem;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 2px; cursor: pointer; transition: opacity .2s;
+  }
+  .btn-submit:hover { opacity: .85; }
+  .btn-cancel {
+    background: var(--surface2); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: .85rem 1.25rem; cursor: pointer; font-size: .9rem;
+  }
+
+  /* ── FEED ── */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem; letter-spacing: 3px; color: var(--muted);
+    margin-bottom: 1rem; text-transform: uppercase;
+  }
+
+  .feed { display: flex; flex-direction: column; gap: .75rem; }
+
+  .workout-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    animation: slideIn .3s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-header {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .9rem 1.1rem;
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 500; font-size: .8rem; flex-shrink: 0;
+  }
+  .avatar.p1 { background: #e8ff4722; color: var(--accent); border: 1.5px solid var(--accent); }
+  .avatar.p2 { background: #ff6b3522; color: var(--accent2); border: 1.5px solid var(--accent2); }
+
+  .card-meta { flex: 1; }
+  .card-meta .who { font-weight: 500; font-size: .9rem; }
+  .card-meta .when { font-size: .75rem; color: var(--muted); }
+
+  .card-badge {
+    font-size: .7rem; padding: .25rem .6rem;
+    border-radius: 99px; font-weight: 500; letter-spacing: .04em;
+  }
+  .badge-musculacao { background: #ff6b3520; color: var(--accent2); border: 1px solid #ff6b3540; }
+  .badge-cardio { background: #47ffe820; color: #47ffe8; border: 1px solid #47ffe840; }
+  .badge-funcional { background: #e8ff4720; color: var(--accent); border: 1px solid #e8ff4740; }
+  .badge-outro { background: #88888820; color: var(--muted); border: 1px solid #88888840; }
+
+  .card-body { padding: 0 1.1rem .9rem; }
+  .card-title { font-weight: 500; margin-bottom: .3rem; }
+  .card-notes { font-size: .85rem; color: var(--muted); line-height: 1.5; }
+  .card-photo {
+    width: 100%; max-height: 220px; object-fit: cover;
+    border-radius: 8px; margin-top: .6rem;
+    cursor: pointer; transition: opacity .2s;
+  }
+  .card-photo:hover { opacity: .85; }
+  .card-footer {
+    border-top: 1px solid var(--border);
+    padding: .5rem 1.1rem;
+    display: flex; gap: 1rem;
+  }
+  .card-stat { font-size: .78rem; color: var(--muted); }
+  .card-stat span { color: var(--text); font-weight: 500; }
+
+  .delete-btn {
+    background: none; border: none; color: #555;
+    font-size: .75rem; cursor: pointer; margin-left: auto;
+    transition: color .2s;
+  }
+  .delete-btn:hover { color: #ff4444; }
+
+  .empty-state {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--muted); font-size: .9rem; line-height: 1.7;
+  }
+  .empty-state .big { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--border); display: block; letter-spacing: 3px; }
+
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,.92);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; cursor: zoom-out;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  #lightbox.open { opacity: 1; pointer-events: all; }
+  #lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 8px; }
+
+  /* ── LOADING ── */
+  .spinner {
+    text-align: center; padding: 2rem;
+    color: var(--muted); font-size: .85rem;
+  }
+  .dot-pulse::after {
+    content: '...';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
+
+  .toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #000;
+    padding: .6rem 1.25rem; border-radius: 99px;
+    font-size: .85rem; font-weight: 500; z-index: 300;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 480px) {
+    .streak-bar { gap: .5rem; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CONFIG OVERLAY -->
+<div id="config-overlay">
+  <div class="config-box">
+    <h2>⚙ Configuração</h2>
+    <p>Primeira vez? Configure a conexão com o Google Sheets. Só precisa fazer isso uma vez — os dados ficam salvos no navegador.<br><br>
+    <a href="https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit" target="_blank">📄 Como configurar o Google Sheets →</a></p>
+    <div class="field">
+      <label>ID da Planilha Google Sheets</label>
+      <input type="text" id="cfg-sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+    </div>
+    <div class="field">
+      <label>Nome da Pessoa 1</label>
+      <input type="text" id="cfg-p1" placeholder="Ex: João">
+    </div>
+    <div class="field">
+      <label>Nome da Pessoa 2</label>
+      <input type="text" id="cfg-p2" placeholder="Ex: Maria">
+    </div>
+    <div class="field">
+      <label>Apps Script URL (para salvar dados)</label>
+      <input type="text" id="cfg-script" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <button class="btn-primary" onclick="saveConfig()">SALVAR E CONTINUAR</button>
+    <p style="margin-top:1rem; font-size:.78rem; color:#555; text-align:center;">Guia de configuração incluído no README.md</p>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">GYM<span>DUO</span></div>
+  <div class="header-actions">
+    <button class="btn-icon" onclick="openModal()">+ Treino</button>
+    <button class="btn-icon" onclick="showConfig()">⚙</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <!-- Streak Cards -->
+  <div class="streak-bar" id="streak-bar">
+    <div class="streak-card" id="streak-p1">
+      <div class="streak-icon">🔥</div>
+      <div class="streak-info">
+        <div class="name" id="name-p1">Pessoa 1</div>
+        <div class="count" id="streak-count-p1">0</div>
+        <div class="label">treinos</div>
+      </div>
+    </div>
+    <div class="streak-card" id="streak-p2">
+      <div class="streak-icon">⚡</div>
+      <div class="streak-info">
+        <div class="name" id="name-p2">Pessoa 2</div>
+        <div class="count" id="streak-count-p2">0</div>
+        <div class="label">treinos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Button -->
+  <div class="add-section">
+    <button class="btn-add" onclick="openModal()">
+      <span class="plus">＋</span>
+      Registrar treino de hoje
+    </button>
+  </div>
+
+  <!-- Feed -->
+  <div class="section-title">Histórico</div>
+  <div class="feed" id="feed">
+    <div class="spinner"><span class="dot-pulse">Carregando</span></div>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal" onclick="closeModalBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Novo Treino</h3>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quem treinou?</label>
+        <select id="f-person">
+          <option value="p1" id="opt-p1">Pessoa 1</option>
+          <option value="p2" id="opt-p2">Pessoa 2</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo de treino</label>
+        <select id="f-type">
+          <option value="musculacao">Musculação</option>
+          <option value="cardio">Cardio</option>
+          <option value="funcional">Funcional</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Descrição (ex: Peito + Tríceps)</label>
+        <input type="text" id="f-title" placeholder="O que treinou hoje?">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Duração (min)</label>
+        <input type="number" id="f-duration" placeholder="60" min="1">
+      </div>
+      <div class="form-group">
+        <label>Sensação</label>
+        <select id="f-feeling">
+          <option value="💪 Arrasou">💪 Arrasou</option>
+          <option value="😤 Focado">😤 Focado</option>
+          <option value="😐 Normal">😐 Normal</option>
+          <option value="😵 Cansado">😵 Cansado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Notas / observações</label>
+        <textarea id="f-notes" placeholder="PRs batidos, observações..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Foto de progresso (link Imgur)</label>
+        <input type="url" id="f-photo" placeholder="https://i.imgur.com/xxxx.jpg">
+        <p style="font-size:.73rem; color:#555; margin-top:.35rem;">Suba a foto no <a href="https://imgur.com/upload" target="_blank" style="color:var(--accent)">imgur.com</a> e cole o link direto aqui</p>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-submit" onclick="submitWorkout()">SALVAR TREINO</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="Foto">
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+let CFG = {};
+
+function loadConfig() {
+  const raw = localStorage.getItem('gymduo_config');
+  if (raw) {
+    CFG = JSON.parse(raw);
+    applyNames();
+    document.getElementById('config-overlay').classList.add('hidden');
+    loadWorkouts();
+  }
+}
+
+function saveConfig() {
+  const sheetId = document.getElementById('cfg-sheet-id').value.trim();
+  const p1 = document.getElementById('cfg-p1').value.trim();
+  const p2 = document.getElementById('cfg-p2').value.trim();
+  const script = document.getElementById('cfg-script').value.trim();
+  if (!sheetId || !p1 || !p2 || !script) {
+    showToast('Preencha todos os campos!'); return;
+  }
+  CFG = { sheetId, p1, p2, script };
+  localStorage.setItem('gymduo_config', JSON.stringify(CFG));
+  applyNames();
+  document.getElementById('config-overlay').classList.add('hidden');
+  loadWorkouts();
+}
+
+function showConfig() {
+  if (CFG.sheetId) {
+    document.getElementById('cfg-sheet-id').value = CFG.sheetId;
+    document.getElementById('cfg-p1').value = CFG.p1;
+    document.getElementById('cfg-p2').value = CFG.p2;
+    document.getElementById('cfg-script').value = CFG.script;
+  }
+  document.getElementById('config-overlay').classList.remove('hidden');
+}
+
+function applyNames() {
+  document.getElementById('name-p1').textContent = CFG.p1;
+  document.getElementById('name-p2').textContent = CFG.p2;
+  document.getElementById('opt-p1').textContent = CFG.p1;
+  document.getElementById('opt-p2').textContent = CFG.p2;
+}
+
+// ── WORKOUTS ──
+let workouts = [];
+
+async function loadWorkouts() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '<div class="spinner"><span class="dot-pulse">Carregando</span></div>';
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq?tqx=out:json&sheet=Treinos`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);/)[1]);
+    const rows = json.table.rows || [];
+    workouts = rows.map((r, i) => ({
+      id: r.c[0]?.v || i,
+      person: r.c[1]?.v || '',
+      type: r.c[2]?.v || 'outro',
+      title: r.c[3]?.v || '',
+      duration: r.c[4]?.v || '',
+      feeling: r.c[5]?.v || '',
+      notes: r.c[6]?.v || '',
+      photo: r.c[7]?.v || '',
+      date: r.c[8]?.v || '',
+    })).reverse();
+    renderFeed();
+    updateStreaks();
+  } catch(e) {
+    feed.innerHTML = '<div class="empty-state"><span class="big">SEM DADOS</span>Erro ao carregar. Verifique o ID da planilha e se ela está pública.</div>';
+  }
+}
+
+function renderFeed() {
+  const feed = document.getElementById('feed');
+  if (!workouts.length) {
+    feed.innerHTML = '<div class="empty-state"><span class="big">VAZIO</span>Nenhum treino ainda.<br>Registrem o primeiro! 💪</div>';
+    return;
+  }
+  feed.innerHTML = workouts.map((w, i) => cardHTML(w, i)).join('');
+}
+
+function cardHTML(w, i) {
+  const isPerson1 = w.person === CFG.p1;
+  const avatarClass = isPerson1 ? 'p1' : 'p2';
+  const initial = (w.person || '?')[0].toUpperCase();
+  const badgeClass = 'badge-' + (w.type || 'outro');
+  const badgeLabel = { musculacao: 'Musculação', cardio: 'Cardio', funcional: 'Funcional', outro: 'Outro' }[w.type] || w.type;
+  const dateStr = w.date ? new Date(w.date).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '';
+
+  return `
+  <div class="workout-card" id="card-${i}">
+    <div class="card-header">
+      <div class="avatar ${avatarClass}">${initial}</div>
+      <div class="card-meta">
+        <div class="who">${w.person}</div>
+        <div class="when">${dateStr}</div>
+      </div>
+      <span class="card-badge ${badgeClass}">${badgeLabel}</span>
+    </div>
+    <div class="card-body">
+      ${w.title ? `<div class="card-title">${w.title}</div>` : ''}
+      ${w.notes ? `<div class="card-notes">${w.notes}</div>` : ''}
+      ${w.photo ? `<img class="card-photo" src="${w.photo}" alt="Progresso" onclick="openLightbox('${w.photo}')" loading="lazy">` : ''}
+    </div>
+    <div class="card-footer">
+      ${w.duration ? `<span class="card-stat"><span>${w.duration}</span> min</span>` : ''}
+      ${w.feeling ? `<span class="card-stat">${w.feeling}</span>` : ''}
+      <button class="delete-btn" onclick="deleteWorkout(${i})">✕ excluir</button>
+    </div>
+  </div>`;
+}
+
+function updateStreaks() {
+  const count = (name) => workouts.filter(w => w.person === name).length;
+  document.getElementById('streak-count-p1').textContent = count(CFG.p1);
+  document.getElementById('streak-count-p2').textContent = count(CFG.p2);
+}
+
+// ── SUBMIT ──
+async function submitWorkout() {
+  const person = document.getElementById('f-person').value === 'p1' ? CFG.p1 : CFG.p2;
+  const type = document.getElementById('f-type').value;
+  const title = document.getElementById('f-title').value.trim();
+  const duration = document.getElementById('f-duration').value.trim();
+  const feeling = document.getElementById('f-feeling').value;
+  const notes = document.getElementById('f-notes').value.trim();
+  const photo = document.getElementById('f-photo').value.trim();
+
+  if (!title) { showToast('Descreva o treino!'); return; }
+
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = 'SALVANDO...';
+  btn.disabled = true;
+
+  const payload = { person, type, title, duration, feeling, notes, photo, date: new Date().toISOString() };
+
+  try {
+    await fetch(CFG.script, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showToast('Treino salvo! 💪');
+    closeModal();
+    clearForm();
+    setTimeout(loadWorkouts, 1500);
+  } catch(e) {
+    showToast('Erro ao salvar. Tente novamente.');
+  }
+  btn.textContent = 'SALVAR TREINO';
+  btn.disabled = false;
+}
+
+async function deleteWorkout(i) {
+  if (!confirm('Excluir este treino?')) return;
+  const w = workouts[i];
+  try {
+    await fetch(CFG.script + '?action=delete&id=' + encodeURIComponent(w.id), {
+      method: 'GET', mode: 'no-cors'
+    });
+    showToast('Treino excluído');
+    setTimeout(loadWorkouts, 1000);
+  } catch(e) {
+    showToast('Erro ao excluir');
+  }
+}
+
+// ── UI ──
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+function closeModalBackdrop(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+function clearForm() {
+  ['f-title','f-duration','f-notes','f-photo'].forEach(id => document.getElementById(id).value = '');
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── INIT ──
+loadConfig();
+</script>
+</body>
+</html>
