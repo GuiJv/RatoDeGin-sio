@@ -70,7 +70,7 @@ async function loadWorkouts() {
     renderFeed();
     updateStreaks();
   } catch(e) {
-    console.log(e)
+    console.log(e);
     feed.innerHTML = '<div class="empty-state"><span class="big">SEM DADOS</span>Erro ao carregar. Verifique o ID da planilha e se ela está pública.</div>';
   }
 }
@@ -121,64 +121,71 @@ function updateStreaks() {
   document.getElementById('streak-count-p2').textContent = count(CFG.p2);
 }
 
-// ── SUBMIT ──
+// ── CLOUDINARY ──
 async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', CFG.cloudinaryPreset);
+  formData.append('upload_preset', 'preset_1');
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CFG.cloudinaryName}/image/upload`, {
+  const res = await fetch(`https://api.cloudinary.com/v1_1/do9ncusv9/image/upload`, {
     method: 'POST',
     body: formData
   });
-  if (!res.ok) console.log(res.json());
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Falha no upload da foto');
+  }
+
   const data = await res.json();
   return data.secure_url;
 }
 
-  async function submitWorkout() {
-    const person = document.getElementById('f-person').value === 'p1' ? CFG.p1 : CFG.p2;
-    const type = document.getElementById('f-type').value;
-    const title = document.getElementById('f-title').value.trim();
-    const duration = document.getElementById('f-duration').value.trim();
-    const feeling = document.getElementById('f-feeling').value;
-    const notes = document.getElementById('f-notes').value.trim();
-    const photoFile = document.getElementById('f-photo').files[0];
+// ── SUBMIT ──
+async function submitWorkout() {
+  const person = document.getElementById('f-person').value === 'p1' ? CFG.p1 : CFG.p2;
+  const type = document.getElementById('f-type').value;
+  const title = document.getElementById('f-title').value.trim();
+  const duration = document.getElementById('f-duration').value.trim();
+  const feeling = document.getElementById('f-feeling').value;
+  const notes = document.getElementById('f-notes').value.trim();
+  const photoFile = document.getElementById('f-photo').files[0];
 
-    if (!title) { showToast('Descreva o treino!'); return; }
+  if (!title) { showToast('Descreva o treino!'); return; }
 
-    const btn = document.querySelector('.btn-submit');
-    btn.textContent = 'SALVANDO...';
-    btn.disabled = true;
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = 'SALVANDO...';
+  btn.disabled = true;
 
-    try {
-      let photoUrl = '';
-      if (photoFile) {
-        btn.textContent = 'ENVIANDO FOTO...';
-        photoUrl = await uploadToCloudinary(photoFile);
-      }
-
-      const payload = { person, type, title, duration, feeling, notes, photo: photoUrl, date: new Date().toISOString() };
-      console.log(CFG.script);
-      console.log(payload);
-      await fetch(CFG.script, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(payload)
-        });
-      showToast('Treino salvo! 💪');
-      closeModal();
-      clearForm();
-      setTimeout(loadWorkouts, 1500);
-    } catch(e) {
-      console.log(e);
-      showToast(e.message === 'Falha no upload da foto' ? 'Erro ao enviar foto. Tente novamente.' : 'Erro ao salvar. Tente novamente.');
+  try {
+    let photoUrl = '';
+    if (photoFile) {
+      btn.textContent = 'ENVIANDO FOTO...';
+      photoUrl = await uploadToCloudinary(photoFile);
     }
 
-    btn.textContent = 'SALVAR TREINO';
-    btn.disabled = false;
+    const payload = { person, type, title, duration, feeling, notes, photo: photoUrl, date: new Date().toISOString() };
+
+    await fetch(CFG.script, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+
+    showToast('Treino salvo! 💪');
+    closeModal();
+    clearForm();
+    setTimeout(loadWorkouts, 1500);
+  } catch(e) {
+    console.log(e);
+    showToast(e.message === 'Falha no upload da foto' ? 'Erro ao enviar foto. Tente novamente.' : 'Erro ao salvar. Tente novamente.');
   }
 
+  btn.textContent = 'SALVAR TREINO';
+  btn.disabled = false;
+}
+
+// ── DELETE ──
 async function deleteWorkout(i) {
   if (!confirm('Excluir este treino?')) return;
   const w = workouts[i];
@@ -204,7 +211,10 @@ function closeModalBackdrop(e) {
   if (e.target === document.getElementById('modal')) closeModal();
 }
 function clearForm() {
-  ['f-title','f-duration','f-notes','f-photo'].forEach(id => document.getElementById(id).value = '');
+  ['f-title', 'f-duration', 'f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-photo').value = '';
+  document.getElementById('placeholder').style.display = 'block';
+  document.getElementById('preview-wrap').style.display = 'none';
 }
 
 function openLightbox(src) {
@@ -220,10 +230,6 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function uploadPhoto() {
-  document.getElementById('f-photo').click();
 }
 
 function handleFileUpload(input) {
@@ -245,57 +251,6 @@ function removeFile(e) {
   document.getElementById('placeholder').style.display = 'block';
   document.getElementById('preview-wrap').style.display = 'none';
 }
-
-const dropZone = document.getElementById('drop-zone');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.background = '#f0f0f0'; });
-dropZone.addEventListener('dragleave', () => { dropZone.style.background = '#fafafa'; });
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.style.background = '#fafafa';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    document.getElementById('f-photo').files = dt.files;
-    handleFileUpload(document.getElementById('f-photo'));
-  }
-});
-
-
-async function uploadToCloudinary(file) {
-  const CLOUD_NAME = 'do9ncusv9';
-  const UPLOAD_PRESET = 'preset_1'; // deve ser "unsigned"
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
-
-  xhr.upload.onprogress = function(e) {
-    if (e.lengthComputable) {
-      const pct = Math.round((e.loaded / e.total) * 100);
-      console.log(`Progresso: ${pct}%`);
-      // atualize sua barra de progresso aqui
-    }
-  };
-
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      const data = JSON.parse(xhr.responseText);
-      console.log('URL da imagem:', data.secure_url);
-      // salve data.secure_url onde precisar
-    } else {
-      const err = JSON.parse(xhr.responseText);
-      console.error('Erro no upload:', err.error?.message);
-    }
-  };
-
-  xhr.onerror = () => console.error('Erro de rede');
-  xhr.send(formData);
-}
-
 
 // ── INIT ──
 loadConfig();
