@@ -160,7 +160,8 @@ async function uploadToCloudinary(file) {
       }
 
       const payload = { person, type, title, duration, feeling, notes, photo: photoUrl, date: new Date().toISOString() };
-
+      console.log(CFG.script);
+      console.log(payload);
       const res = await fetch(CFG.script, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -175,6 +176,7 @@ async function uploadToCloudinary(file) {
       clearForm();
       setTimeout(loadWorkouts, 1500);
     } catch(e) {
+      console.log(e);
       showToast(e.message === 'Falha no upload da foto' ? 'Erro ao enviar foto. Tente novamente.' : 'Erro ao salvar. Tente novamente.');
     }
 
