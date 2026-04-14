@@ -161,12 +161,14 @@ async function uploadToCloudinary(file) {
 
       const payload = { person, type, title, duration, feeling, notes, photo: photoUrl, date: new Date().toISOString() };
 
-      await fetch(CFG.script, {
+      const res = await fetch(CFG.script, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
+      const data = await res.json();
+      console.log(data);
 
       showToast('Treino salvo! 💪');
       closeModal();
