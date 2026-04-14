@@ -131,8 +131,7 @@ async function uploadToCloudinary(file) {
     method: 'POST',
     body: formData
   });
-
-  if (!res.ok) throw new Error('Falha no upload da foto');
+  if (!res.ok) console.log(res.json());
   const data = await res.json();
   return data.secure_url;
 }
