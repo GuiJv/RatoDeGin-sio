@@ -104,12 +104,9 @@ function cardHTML(w, i) {
     </div>
     <div class="card-body">
       ${w.title ? `<div class="card-title">${w.title}</div>` : ''}
-      ${w.notes ? `<div class="card-notes">${w.notes}</div>` : ''}
       ${w.photo ? `<img class="card-photo" src="${w.photo}" alt="Progresso" onclick="openLightbox('${w.photo}')" loading="lazy">` : ''}
     </div>
     <div class="card-footer">
-      ${w.duration ? `<span class="card-stat"><span>${w.duration}</span> min</span>` : ''}
-      ${w.feeling ? `<span class="card-stat">${w.feeling}</span>` : ''}
       <button class="delete-btn" onclick="deleteWorkout(${i})">✕ excluir</button>
     </div>
   </div>`;
@@ -145,7 +142,7 @@ async function uploadToCloudinary(file) {
 // ── SUBMIT ──
 async function submitWorkout() {
   const person = document.getElementById('f-person').value === 'p1' ? CFG.p1 : CFG.p2;
-  const type = document.getElementById('f-type').value;
+  const type = '';
   const title = document.getElementById('f-title').value.trim();
   const duration = document.getElementById('f-duration').value.trim();
   const feeling = document.getElementById('f-feeling').value;

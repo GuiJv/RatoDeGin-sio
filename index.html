@@ -90,7 +90,7 @@
       <button class="close-btn" onclick="closeModal()">×</button>
     </div>
 
-    <div class="form-row">
+    <div class="form-row full">
       <div class="form-group">
         <label>Quem treinou?</label>
         <select id="f-person">
@@ -98,78 +98,45 @@
           <option value="p2" id="opt-p2">Pessoa 2</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Tipo de treino</label>
-        <select id="f-type">
-          <option value="musculacao">Musculação</option>
-          <option value="cardio">Cardio</option>
-          <option value="funcional">Funcional</option>
-          <option value="outro">Outro</option>
-        </select>
-      </div>
     </div>
 
     <div class="form-row full">
       <div class="form-group">
-        <label>Descrição (ex: Peito + Tríceps)</label>
-        <input type="text" id="f-title" placeholder="O que treinou hoje?">
+        <label>Título</label>
+        <input type="text" id="f-title" placeholder="Comente algo">
       </div>
     </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>Duração (min)</label>
-        <input type="number" id="f-duration" placeholder="60" min="1">
-      </div>
-      <div class="form-group">
-        <label>Sensação</label>
-        <select id="f-feeling">
-          <option value="💪 Arrasou">💪 Fortasso</option>
-          <option value="😔 Flop">😔 Flop</option>
-          <option value="😐 Normal">😐 Normal</option>
-          <option value="😵 Cansado">😵 Cansado</option>
-        </select>
-      </div>
-    </div>
-
     <div class="form-row full">
       <div class="form-group">
-        <label>Notas / observações</label>
-        <textarea id="f-notes" placeholder="PRs batidos, observações..."></textarea>
-      </div>
-    </div>
+      <label>Foto de progresso</label>
 
-    <div class="form-row full">
-      <div class="form-group">
-        <label>Foto de progresso</label>
-
-        <div id="drop-zone" onclick="document.getElementById('f-photo').click()"
-          style="border: 1.5px dashed #ccc; border-radius: 8px; padding: 2rem 1.25rem; text-align: center; cursor: pointer; background: #fafafa;">
-          
-          <div id="placeholder">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.4"
-              stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 8px; display: block;">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-            <p style="font-size:.87rem; color:#555; margin: 0 0 4px;">Clique para selecionar uma foto</p>
-            <p style="font-size:.75rem; color:#aaa; margin: 0;">JPG, PNG, WEBP — máx. 10 MB</p>
-          </div>
-
-          <div id="preview-wrap" style="display:none;">
-            <img id="preview-img" style="max-width:100%; max-height:200px; border-radius:6px; display:block; margin: 0 auto;" />
-            <div style="margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px;">
-              <span id="file-name" style="font-size:.75rem; color:#666;"></span>
-              <button onclick="removeFile(event)"
-                style="font-size:.75rem; color:#c0392b; background:none; border:none; cursor:pointer; padding:0;">Remover</button>
-            </div>
-          </div>
+      <div id="drop-zone" onclick="document.getElementById('f-photo').click()"
+        style="border: 1.5px dashed #ccc; border-radius: 8px; padding: 2rem 1.25rem; text-align: center; cursor: pointer; background: #fafafa;">
+        
+        <div id="placeholder">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.4"
+            stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 8px; display: block;">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <p style="font-size:.87rem; color:#555; margin: 0 0 4px;">Clique para selecionar uma foto</p>
+          <p style="font-size:.75rem; color:#aaa; margin: 0;">JPG, PNG, WEBP — máx. 10 MB</p>
         </div>
 
-        <input type="file" id="f-photo" accept="image/*" style="display:none;" onchange="handleFileUpload(this)">
-        <p style="font-size:.73rem; color:#555; margin-top:.35rem;">Formatos aceitos: JPG, PNG, WEBP</p>
+        <div id="preview-wrap" style="display:none;">
+          <img id="preview-img" style="max-width:100%; max-height:200px; border-radius:6px; display:block; margin: 0 auto;" />
+          <div style="margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <span id="file-name" style="font-size:.75rem; color:#666;"></span>
+            <button onclick="removeFile(event)"
+              style="font-size:.75rem; color:#c0392b; background:none; border:none; cursor:pointer; padding:0;">Remover</button>
+          </div>
+        </div>
       </div>
+
+      <input type="file" id="f-photo" accept="image/*" style="display:none;" onchange="handleFileUpload(this)">
+      <p style="font-size:.73rem; color:#555; margin-top:.35rem;">Formatos aceitos: JPG, PNG, WEBP</p>
+    </div>
   </div>
 
     <div class="modal-actions">
