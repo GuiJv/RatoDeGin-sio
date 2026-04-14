@@ -144,9 +144,9 @@ async function submitWorkout() {
   const person = document.getElementById('f-person').value === 'p1' ? CFG.p1 : CFG.p2;
   const type = '';
   const title = document.getElementById('f-title').value.trim();
-  const duration = document.getElementById('f-duration').value.trim();
-  const feeling = document.getElementById('f-feeling').value;
-  const notes = document.getElementById('f-notes').value.trim();
+  const duration = '';
+  const feeling = '';
+  const notes = '';
   const photoFile = document.getElementById('f-photo').files[0];
 
   if (!title) { showToast('Descreva o treino!'); return; }
