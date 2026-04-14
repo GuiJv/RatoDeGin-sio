@@ -265,7 +265,7 @@ dropZone.addEventListener('drop', e => {
 
 async function uploadToCloudinary(file) {
   const CLOUD_NAME = 'do9ncusv9';
-  const UPLOAD_PRESET = 'ml_default'; // deve ser "unsigned"
+  const UPLOAD_PRESET = 'preset_1'; // deve ser "unsigned"
 
   const formData = new FormData();
   formData.append('file', file);
