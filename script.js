@@ -162,10 +162,10 @@ async function uploadToCloudinary(file) {
       console.log(CFG.script);
       console.log(payload);
       const res = await fetch(CFG.script, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload)
+        });
 
       const data = await res.json();
       console.log(data);
