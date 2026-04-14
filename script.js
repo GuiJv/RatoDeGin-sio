@@ -160,6 +160,7 @@ async function submitWorkout() {
 
   try {
     let photoUrl = '';
+    console.log('photoFile', photoFile);
     if (photoFile) {
       btn.textContent = 'ENVIANDO FOTO...';
       photoUrl = await uploadToCloudinary(photoFile);
