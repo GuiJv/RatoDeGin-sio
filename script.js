@@ -210,7 +210,7 @@ function closeModalBackdrop(e) {
   if (e.target === document.getElementById('modal')) closeModal();
 }
 function clearForm() {
-  ['f-title', 'f-duration', 'f-notes'].forEach(id => document.getElementById(id).value = '');
+  ['f-title'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-photo').value = '';
   document.getElementById('placeholder').style.display = 'block';
   document.getElementById('preview-wrap').style.display = 'none';
