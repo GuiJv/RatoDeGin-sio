@@ -57,7 +57,7 @@ async function loadWorkouts() {
       { id:2, person:CFG.p2, type:'cardio',     title:'Corrida 5km',               duration:'30min', feeling:'😅', notes:'',                         photo:'', date:'2025-05-02' },
       { id:3, person:CFG.p1, type:'funcional',  title:'HIIT + core',               duration:'20min', feeling:'🔥', notes:'Exaustivo mas valeu',       photo:'', date:'2025-05-03' },
       { id:4, person:CFG.p2, type:'musculacao', title:'Pernas — agachamento 4x10', duration:'60min', feeling:'💪', notes:'',                         photo:'', date:'2025-05-03' },
-      { id:5, person:CFG.p1, type:'outro',      title:'Alongamento + mobilidade',  duration:'15min', feeling:'😌', notes:'Recuperação ativa',         photo:'', date:'2025-05-04' },
+      { id:5, person:CFG.p1, type:'outro',      title:'Alongamento + mobilidade',  duration:'15min', feeling:'', notes:'Recuperação ativa',         photo:'', date:'2025-05-04' },
     ].reverse();
     renderFeed();
     updateStreaks();
@@ -122,10 +122,14 @@ function cardHTML(w, i) {
         <div class="emoji-picker" id="picker-wrap-${i}" onclick="togglePicker(${i})">
         ${`
           <div class="reaction-container">${w.feeling}</div>
-          ` || ''}
+          ` || '☺︎'}
         </div>
         <div class="emoji-popup" id="popup-${i}"><emoji-picker emoji-version="15.0"></emoji-picker></div>`
-       : ''}
+       : w.feeling ? `<div class="reaction-container">${w.feeling}</div>` :  `
+        <div class="emoji-picker" id="picker-wrap-${i}" onclick="togglePicker(${i})">
+        ☺︎
+        </div>
+        <div class="emoji-popup" id="popup-${i}"><emoji-picker emoji-version="15.0"></emoji-picker></div>`}
       <button class="delete-btn" onclick="deleteWorkout(${i})">✕</button>
     </div>
   </div>`;
