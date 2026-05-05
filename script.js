@@ -52,7 +52,7 @@ async function loadWorkouts() {
   const feed = document.getElementById('feed');
   feed.innerHTML = '<div class="spinner"><span class="dot-pulse">Carregando</span></div>';
 
-  workouts = [
+  /* workouts = [
       { id:1, person:CFG.p1, type:'musculacao', title:'Supino + Crucifixo',        duration:'45min', feeling:'💪', notes:'Aumentei carga no supino', photo:'', date:'2025-05-01' },
       { id:2, person:CFG.p2, type:'cardio',     title:'Corrida 5km',               duration:'30min', feeling:'😅', notes:'',                         photo:'', date:'2025-05-02' },
       { id:3, person:CFG.p1, type:'funcional',  title:'HIIT + core',               duration:'20min', feeling:'🔥', notes:'Exaustivo mas valeu',       photo:'', date:'2025-05-03' },
@@ -61,7 +61,7 @@ async function loadWorkouts() {
     ].reverse();
     renderFeed();
     updateStreaks();
-    return;
+    return; */
   try {
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq?tqx=out:json&sheet=Treinos`;
     const res = await fetch(url);
