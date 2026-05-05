@@ -47,7 +47,7 @@ body {
 
   .field { margin-bottom: 1rem; }
   .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .4rem; letter-spacing: .05em; text-transform: uppercase; }
-  .field input {
+  .field input, .field select {
     width: 100%; background: var(--surface2);
     border: 1px solid var(--border); border-radius: 8px;
     padding: .7rem 1rem; color: var(--text);
@@ -284,3 +284,36 @@ body {
     .streak-bar { gap: .5rem; }
     .form-row { grid-template-columns: 1fr; }
   } 
+
+  .emoji-picker{
+    font-size: 20px;
+    color: #555;
+  }
+
+  .reaction-container{
+    padding: 4px;
+    border: 1px;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: var(--border);
+    background-color: var(--bg);
+  }
+
+  emoji-picker{
+    cursor: pointer;
+    width: 250px;
+    --num-columns: 5;
+    
+  }
+
+  .emoji-popup{
+    display: none;
+    position: absolute;
+    width: 150px;
+    background-color: transparent;
+    padding: 5px;
+    z-index: 1;
+  }
+  .emoji-popup.open{
+    display: block
+  }

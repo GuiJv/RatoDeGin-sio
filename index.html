@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <body>
 
 <!-- CONFIG OVERLAY -->
@@ -30,11 +30,20 @@
       <input type="text" id="cfg-p2" placeholder="Ex: Maria">
     </div>
     <div class="field">
+      <label>Quem você é ?</label>
+      <select id="cfg-role">
+        <option value="1">Pessoa 1</option>
+        <option value="2">Pessoa 2</option>
+      </select>
+    </div>
+    <div class="field">
       <label>Apps Script URL (para salvar dados)</label>
       <input type="text" id="cfg-script" placeholder="https://script.google.com/macros/s/.../exec">
     </div>
+
     <button class="btn-primary" onclick="saveConfig()">SALVAR E CONTINUAR</button>
     <p style="margin-top:1rem; font-size:.78rem; color:#555; text-align:center;">Guia de configuração incluído no README.md</p>
+
   </div>
 </div>
 

@@ -19,10 +19,11 @@ function saveConfig() {
   const p1 = document.getElementById('cfg-p1').value.trim();
   const p2 = document.getElementById('cfg-p2').value.trim();
   const script = document.getElementById('cfg-script').value.trim();
-  if (!sheetId || !p1 || !p2 || !script) {
+  const currentPerson = document.getElementById('cfg-role').value;
+  if (!sheetId || !p1 || !p2 || !script || !currentPerson) {
     showToast('Preencha todos os campos!'); return;
   }
-  CFG = { sheetId, p1, p2, script };
+  CFG = { sheetId, p1, p2, script , currentPerson };
   localStorage.setItem('gymduo_config', JSON.stringify(CFG));
   applyNames();
   document.getElementById('config-overlay').classList.add('hidden');
@@ -50,6 +51,17 @@ function applyNames() {
 async function loadWorkouts() {
   const feed = document.getElementById('feed');
   feed.innerHTML = '<div class="spinner"><span class="dot-pulse">Carregando</span></div>';
+
+  workouts = [
+      { id:1, person:CFG.p1, type:'musculacao', title:'Supino + Crucifixo',        duration:'45min', feeling:'💪', notes:'Aumentei carga no supino', photo:'', date:'2025-05-01' },
+      { id:2, person:CFG.p2, type:'cardio',     title:'Corrida 5km',               duration:'30min', feeling:'😅', notes:'',                         photo:'', date:'2025-05-02' },
+      { id:3, person:CFG.p1, type:'funcional',  title:'HIIT + core',               duration:'20min', feeling:'🔥', notes:'Exaustivo mas valeu',       photo:'', date:'2025-05-03' },
+      { id:4, person:CFG.p2, type:'musculacao', title:'Pernas — agachamento 4x10', duration:'60min', feeling:'💪', notes:'',                         photo:'', date:'2025-05-03' },
+      { id:5, person:CFG.p1, type:'outro',      title:'Alongamento + mobilidade',  duration:'15min', feeling:'😌', notes:'Recuperação ativa',         photo:'', date:'2025-05-04' },
+    ].reverse();
+    renderFeed();
+    updateStreaks();
+    return;
   try {
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq?tqx=out:json&sheet=Treinos`;
     const res = await fetch(url);
@@ -91,9 +103,8 @@ function cardHTML(w, i) {
   const badgeClass = 'badge-' + (w.type || 'outro');
   const badgeLabel = { musculacao: 'Musculação', cardio: 'Cardio', funcional: 'Funcional', outro: 'Outro' }[w.type] || w.type;
   const dateStr = w.date ? new Date(w.date).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '';
-
-  return `
-  <div class="workout-card" id="card-${i}">
+  const person = isPerson1 ?  '1': '2';
+  return ` <div class="workout-card" id="card-${i}">
     <div class="card-header">
       <div class="avatar ${avatarClass}">${initial}</div>
       <div class="card-meta">
@@ -107,10 +118,54 @@ function cardHTML(w, i) {
       ${w.photo ? `<img class="card-photo" src="${w.photo}" alt="Progresso" onclick="openLightbox('${w.photo}')" loading="lazy">` : ''}
     </div>
     <div class="card-footer">
-      <button class="delete-btn" onclick="deleteWorkout(${i})">✕ excluir</button>
+      ${CFG.currentPerson !== person ? `
+        <div class="emoji-picker" id="picker-wrap-${i}" onclick="togglePicker(${i})">
+        ${`
+          <div class="reaction-container">${w.feeling}</div>
+          ` || ''}
+        </div>
+        <div class="emoji-popup" id="popup-${i}"><emoji-picker emoji-version="15.0"></emoji-picker></div>`
+       : ''}
+      <button class="delete-btn" onclick="deleteWorkout(${i})">✕</button>
     </div>
   </div>`;
 }
+
+const EMOJIS = ['🔥','💪','👏','❤️','😮','🎉','🏆','😂'];
+
+function buildPopup(i) {
+  const pop = document.getElementById(`popup-${i}`);
+  pop.innerHTML = EMOJIS.map(e =>
+    `<button class="emoji-option" onclick="toggleReaction(${i},'${e}');togglePicker(${i})">${e}</button>`
+  ).join('');
+}
+
+function togglePicker(i) {
+  const popup = document.getElementById(`popup-${i}`);
+
+  const isOpen = popup.classList.toggle('open');
+
+  if (isOpen) {
+    // adiciona listener para clique fora
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 0);
+
+    function handleClickOutside(event) {
+      const pickerWrap = document.getElementById(`picker-wrap-${i}`);
+
+      // se clicou dentro do popup ou no botão, ignora
+      if (popup.contains(event.target) || pickerWrap.contains(event.target)) {
+        return;
+      }
+
+      popup.classList.remove('open');
+      document.removeEventListener('click', handleClickOutside);
+    }
+  }
+}
+
+
 
 function updateStreaks() {
   const count = (name) => workouts.filter(w => w.person === name).length;
@@ -250,6 +305,22 @@ function removeFile(e) {
   document.getElementById('placeholder').style.display = 'block';
   document.getElementById('preview-wrap').style.display = 'none';
 }
+
+function react(i, emoji) {
+  fetch(CFG.script, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'updateEmoji', id: i, emoji })
+  })
+  .then(() => loadWorkouts());
+}
+
+document.addEventListener('emoji-click', (event) => {
+  const item = event.target.closest('.emoji-popup');
+  if (!item) return;
+  const i = item.id.replace('popup-', '');
+  react(i, event.detail.unicode);
+});
 
 // ── INIT ──
 loadConfig();
