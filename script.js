@@ -52,16 +52,6 @@ async function loadWorkouts() {
   const feed = document.getElementById('feed');
   feed.innerHTML = '<div class="spinner"><span class="dot-pulse">Carregando</span></div>';
 
-  /* workouts = [
-      { id:1, person:CFG.p1, type:'musculacao', title:'Supino + Crucifixo',        duration:'45min', feeling:'💪', notes:'Aumentei carga no supino', photo:'', date:'2025-05-01' },
-      { id:2, person:CFG.p2, type:'cardio',     title:'Corrida 5km',               duration:'30min', feeling:'😅', notes:'',                         photo:'', date:'2025-05-02' },
-      { id:3, person:CFG.p1, type:'funcional',  title:'HIIT + core',               duration:'20min', feeling:'🔥', notes:'Exaustivo mas valeu',       photo:'', date:'2025-05-03' },
-      { id:4, person:CFG.p2, type:'musculacao', title:'Pernas — agachamento 4x10', duration:'60min', feeling:'', notes:'',                         photo:'', date:'2025-05-03' },
-      { id:5, person:CFG.p1, type:'outro',      title:'Alongamento + mobilidade',  duration:'15min', feeling:'', notes:'Recuperação ativa',         photo:'', date:'2025-05-04' },
-    ].reverse();
-    renderFeed();
-    updateStreaks();
-    return; */
   try {
     const url = `https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq?tqx=out:json&sheet=Treinos`;
     const res = await fetch(url);
@@ -100,8 +90,6 @@ function cardHTML(w, i) {
   const isPerson1 = w.person === CFG.p1;
   const avatarClass = isPerson1 ? 'p1' : 'p2';
   const initial = (w.person || '?')[0].toUpperCase();
-  const badgeClass = 'badge-' + (w.type || 'outro');
-  const badgeLabel = { musculacao: 'Musculação', cardio: 'Cardio', funcional: 'Funcional', outro: 'Outro' }[w.type] || w.type;
   const dateStr = w.date ? new Date(w.date).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '';
   const person = isPerson1 ?  '1': '2';
   return ` <div class="workout-card" id="card-${i}">
@@ -111,7 +99,6 @@ function cardHTML(w, i) {
         <div class="who">${w.person}</div>
         <div class="when">${dateStr}</div>
       </div>
-      <span class="card-badge ${badgeClass}">${badgeLabel}</span>
     </div>
     <div class="card-body">
       ${w.title ? `<div class="card-title">${w.title}</div>` : ''}
@@ -129,15 +116,6 @@ function cardHTML(w, i) {
       <button class="delete-btn" onclick="deleteWorkout(${i})">✕</button>
     </div>
   </div>`;
-}
-
-const EMOJIS = ['🔥','💪','👏','❤️','😮','🎉','🏆','😂'];
-
-function buildPopup(i) {
-  const pop = document.getElementById(`popup-${i}`);
-  pop.innerHTML = EMOJIS.map(e =>
-    `<button class="emoji-option" onclick="toggleReaction(${i},'${e}');togglePicker(${i})">${e}</button>`
-  ).join('');
 }
 
 function togglePicker(i) {
@@ -190,18 +168,13 @@ async function uploadToCloudinary(file) {
   }
 
   const data = await res.json();
-  console.log('data', data);
   return data.secure_url;
 }
 
 // ── SUBMIT ──
 async function submitWorkout() {
   const person = document.getElementById('f-person').value === 'p1' ? CFG.p1 : CFG.p2;
-  const type = '';
   const title = document.getElementById('f-title').value.trim();
-  const duration = '';
-  const feeling = '';
-  const notes = '';
   const photoFile = document.getElementById('f-photo').files[0];
 
   if (!title) { showToast('Descreva o treino!'); return; }
@@ -212,13 +185,13 @@ async function submitWorkout() {
 
   try {
     let photoUrl = '';
-    console.log('photoFile', photoFile);
     if (photoFile) {
       btn.textContent = 'ENVIANDO FOTO...';
       photoUrl = await uploadToCloudinary(photoFile);
     }
 
-    const payload = { person, type, title, duration, feeling, notes, photo: photoUrl, date: new Date().toISOString() };
+    // type/duration/notes mantidos vazios só pra bater com as colunas da planilha (ver Apps Script no README)
+    const payload = { person, type: '', title, duration: '', feeling: '', notes: '', photo: photoUrl, date: new Date().toISOString() };
 
     await fetch(CFG.script, {
       method: 'POST',
@@ -306,20 +279,23 @@ function removeFile(e) {
   document.getElementById('preview-wrap').style.display = 'none';
 }
 
-function react(i, emoji) {
+function react(id, emoji) {
   fetch(CFG.script, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'updateEmoji', id: i, emoji })
+    body: JSON.stringify({ action: 'updateEmoji', id, emoji })
   })
-  .then(() => loadWorkouts());
+  .then(() => loadWorkouts())
+  .catch(() => showToast('Erro ao reagir'));
 }
 
 document.addEventListener('emoji-click', (event) => {
   const item = event.target.closest('.emoji-popup');
   if (!item) return;
-  const i = item.id.replace('popup-', '');
-  react(i, event.detail.unicode);
+  const idx = parseInt(item.id.replace('popup-', ''), 10);
+  const w = workouts[idx];
+  if (!w) return;
+  react(w.id, event.detail.unicode);
 });
 
 // ── INIT ──

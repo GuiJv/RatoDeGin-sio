@@ -8,7 +8,9 @@ Site de acompanhamento de treinos para duas pessoas, usando Google Sheets como b
 
 ```
 /
-└── index.html   ← o site inteiro
+├── index.html   ← estrutura da página
+├── script.js    ← lógica do app
+├── style.css    ← estilos
 └── README.md
 ```
 
@@ -43,6 +45,19 @@ Site de acompanhamento de treinos para duas pessoas, usando Google Sheets como b
 function doPost(e) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Treinos');
   const data = JSON.parse(e.postData.contents);
+
+  if (data.action === 'updateEmoji') {
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][0] == data.id) {
+        sheet.getRange(i + 1, 6).setValue(data.emoji); // coluna F = feeling
+        break;
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const id = new Date().getTime();
   sheet.appendRow([
     id,
@@ -111,10 +126,7 @@ function doGet(e) {
 
 ### 📸 Fotos de Progresso
 
-Use o [Imgur](https://imgur.com/upload) para hospedar as fotos gratuitamente:
-1. Faça upload da foto no Imgur
-2. Clique com o botão direito na imagem → **Copiar endereço da imagem**
-3. Cole o link no campo de foto ao registrar o treino
+As fotos são enviadas automaticamente para o [Cloudinary](https://cloudinary.com) (plano gratuito) quando você registra um treino — não precisa fazer nada manual. Se for rodar seu próprio fork do projeto, crie uma conta grátis no Cloudinary e troque o `cloud name` e o `upload_preset` (modo **Unsigned**) em `script.js`, na função `uploadToCloudinary`.
 
 ---
 
