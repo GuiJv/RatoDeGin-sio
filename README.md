@@ -130,6 +130,4 @@ As fotos são enviadas automaticamente para o [Cloudinary](https://cloudinary.co
 
 ---
 
-## 🔒 Privacidade
-
-A planilha fica visível para qualquer um que tiver o link (necessário para o site ler os dados). Se quiser mais privacidade, uma alternativa é usar o Firebase Firestore com autenticação — me peça e monto essa versão.
+.
